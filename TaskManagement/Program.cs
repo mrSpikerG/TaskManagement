@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using LogicLayer.Interfaces;
-using LogicLayer.Servieces;
+using LogicLayer.Services;
+using Microsoft.OpenApi.Models;
+using DataAccess.Interfaces;
+using DataAccess.Repositories;
 namespace TaskManagement
 {
     public class Program
@@ -22,12 +25,20 @@ namespace TaskManagement
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-            builder.Services.AddScoped<IUserService, UserService>();
+
 
             builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(
               builder.Configuration.GetConnectionString("Local"),
               b => b.MigrationsAssembly(typeof(DatabaseContext).Assembly.FullName)));
+
+            builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ITaskService, TaskService>();
+
+         
+          
 
             builder.Services.AddAuthentication(options =>
             {
@@ -47,6 +58,8 @@ namespace TaskManagement
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                 };
             });
+
+
 
             builder.Services.AddAuthorization();
 

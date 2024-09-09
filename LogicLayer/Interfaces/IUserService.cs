@@ -11,5 +11,6 @@ namespace LogicLayer.Interfaces
     {
         Task<string> RegisterUserAsync(RegisterDTO registerDto);
         Task<string> AuthenticateUserAsync(LoginDTO loginDto);
+        Task<Guid?> GetUserIdByUsernameAsync(string username);
     }
 }

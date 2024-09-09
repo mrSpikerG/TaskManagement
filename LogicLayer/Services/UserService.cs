@@ -1,5 +1,6 @@
 ﻿using DataAccess;
 using DataAccess.DTOs;
+using DataAccess.Interfaces;
 using DataAccess.Models;
 using LogicLayer.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,22 +10,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LogicLayer.Servieces
+namespace LogicLayer.Services
 {
     public class UserService:IUserService
     {
 
-        private readonly DatabaseContext _context;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(DatabaseContext context, IJwtTokenService jwtTokenService)
+        public UserService(IUserRepository repository, IJwtTokenService jwtTokenService)
         {
-            _context = context;
+            _userRepository= repository;
             _jwtTokenService = jwtTokenService;
         }
         public async Task<string> RegisterUserAsync(RegisterDTO registerDto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == registerDto.Username || u.Email == registerDto.Email))
+
+            if (_userRepository.Get().ToList().Any(u => u.Username == registerDto.Username || u.Email == registerDto.Email))
             {
                 throw new Exception("Username or Email already exists.");
             }
@@ -38,15 +40,15 @@ namespace LogicLayer.Servieces
                 UpdatedAt = DateTime.UtcNow
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            _userRepository.Insert(user);   
+
 
             return "User registered successfully.";
         }
 
         public async Task<string> AuthenticateUserAsync(LoginDTO loginDto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username);
+            var user = _userRepository.Get().ToList().FirstOrDefault(u => u.Username == loginDto.Username || u.Email==loginDto.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
             {
@@ -54,6 +56,12 @@ namespace LogicLayer.Servieces
             }
 
             return _jwtTokenService.GenerateToken(user);
+        }
+
+        public async Task<Guid?> GetUserIdByUsernameAsync(string username)
+        {
+
+            return await _userRepository.GetUserIdByUsernameAsync(username);
         }
     }
 }

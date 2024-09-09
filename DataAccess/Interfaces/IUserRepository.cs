@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
-    internal interface IUserRepository : IGenericRepoitory<User>
+    public interface IUserRepository : IGenericRepoitory<User>
     {
+        Task<Guid?> GetUserIdByUsernameAsync(string username);
     }
 }

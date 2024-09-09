@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
-    public interface ITaskRepository : IGenericRepoitory<User>
+    public interface ITaskRepository : IGenericRepoitory<DataAccess.Models.Task>
     {
     }
 }
